@@ -1,3 +1,5 @@
+// TODO: clean up this mess
+
 const baseurl = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs?status=success';
 const total_amount = 380;
 const page_number = 4;
@@ -6,7 +8,7 @@ const smoothness = 10; // higher = smoother
 let jobsReceived = 0;
 let jobs = [];
 
-function fetchData()
+function fetchData(drawer)
 {
     // TODO: total_amount and page_number should be auto-fetched
 
@@ -39,7 +41,7 @@ function fetchData()
                     let j;
                     for(j = 0; j < (total_count-2); j++)
                     {
-                        getJob(runs[j].id)
+                        getJob(runs[j].id, drawer)
                     }
                 }
             } else if (this.readyState == 4) {
@@ -47,12 +49,12 @@ function fetchData()
             }
         }
         xmlhttp.open('GET', url, true)
-        xmlhttp.setRequestHeader("Authorization", 'token ' + '43732994b9b8c9b7013c8de367d63e514e3a1b2a');
+        xmlhttp.setRequestHeader("Authorization", 'token ' + '2cf59f03b94ca4cf9e0dd2ab89d06dfd38f428f6');
         xmlhttp.send()
     }
 }
 
-function getJob(jobId)
+function getJob(jobId, drawer)
 {
     let url = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs/' + jobId + '/jobs';
     const xmlhttp = new XMLHttpRequest()
@@ -68,7 +70,7 @@ function getJob(jobId)
             if(jobsReceived >= total_amount)
             {
                 jobs.sort(function(a,b) {if(Date.parse(a.started_at) < Date.parse(b.completed_at)) {return -1} else {return 1}} )
-                evaluateData(jobs)
+                evaluateData(jobs, drawer)
             }
 
         } else if (this.readyState == 4) {
@@ -76,11 +78,11 @@ function getJob(jobId)
         }
     }
     xmlhttp.open('GET', url, true)
-    xmlhttp.setRequestHeader("Authorization", 'token ' + '43732994b9b8c9b7013c8de367d63e514e3a1b2a');
+    xmlhttp.setRequestHeader("Authorization", 'token ' + '2cf59f03b94ca4cf9e0dd2ab89d06dfd38f428f6');
     xmlhttp.send()
 }
 
-function evaluateData(runs)
+function evaluateData(runs, drawer)
 {
     let runtimes = []
     let totalruntime = 0;
@@ -93,8 +95,6 @@ function evaluateData(runs)
         diff = diff / 1000
         diff = diff / 60
         runtimes[i] = diff
-        if(diff > 17)
-            console.log(runs[i].id + ' ' + diff)
         totalruntime += diff
     }
     const avg = totalruntime / runs.length;
@@ -114,6 +114,7 @@ function evaluateData(runs)
         smoothruntimes[i] = total;
     }
     console.log('draw graph')
+    drawer(smoothruntimes)
     graph(smoothruntimes)
 }
 

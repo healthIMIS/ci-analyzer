@@ -5,10 +5,79 @@
     <title>Title</title>
 </head>
 <body>
-<button onclick="fetchData()">Fetch Data</button>
+<button onclick="startAll()">Fetch Data</button>
 <br>
+<canvas id="myCanvas2" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
+</canvas>
 <canvas id="myCanvas" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
 </canvas>
 </body>
 </html>
 <script src="dataFetcher.js"></script>
+<script src="Chart.js"></script>
+<script>
+    function startAll()
+    {
+        fetchData(drawResults);
+    }
+    function drawResults(timings)
+    {
+        let ctx = document.getElementById('myCanvas2').getContext('2d');
+        let labelsArr = [];
+        for(let i = 0; i < timings.length; i++)
+        {
+            labelsArr.push(i*10);
+        }
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labelsArr,
+                datasets: [{
+                    label: 'Job duration',
+                    data: timings,
+                    fill: false,
+                    backgroundColor: 'black',
+                    borderColor: 'blue',
+                    tension: 0,
+                    radius: 2,
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value, index, values)
+                            {
+                                return value + 'm';
+                            }
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            maxTicksLimit: 10
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'GitHub SORMAS-Project CI Timings'
+                },
+                responsive: false,
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data)
+                        {
+                            let x = Math.floor(tooltipItem.value * 100)/100;
+                            return x + 'm'
+                        },
+                        title: function(tooltipItem, data){
+                            return 'Average runtime of 10 jobs'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
