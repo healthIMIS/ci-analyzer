@@ -1,15 +1,19 @@
 // TODO: clean up this mess
 // Only change these const variables for configuration!
-const baseurl = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs?status=success';
+let baseurl = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs?status=success';
 const token = '57c1ed9995de7c04' + 'a63f2976a3caa68cfaff390c'; // GitHub access token
 const smoothness = 10; // higher = smoother
-const branches = ["development", "*"]; // allowed head branches of jobs. use "*" to evaluate all jobs
+let branches = []; // allowed head branches of jobs. use "*" to evaluate all jobs
 
 let job_amount = 0;
+let jobsReceived = 0;
+let jobs = [];
 
 function fetchData(drawer)
 {
+        let baseurl = 'https://api.github.com/repos/' + document.getElementById("targetrepo").value + '/actions/runs?status=success'
         let url = baseurl + '&per_page=1'
+        branches[0] = document.getElementById("branchselector").value;
 
         const xmlhttp = new XMLHttpRequest()
         xmlhttp.onreadystatechange = function () {
@@ -55,6 +59,11 @@ function fetchPages(numberOfEntries, drawer)
                 {
                     console.log("received all " + numberOfEntries + " runs.")
                     let j;
+                    // reset counters
+                    job_amount = 0;
+                    jobsReceived = 0;
+                    jobs = [];
+                    pages_received = 0;
                     for(j = 0; j < (numberOfEntries); j++)
                     {
                         if(branches.some(branch => (runs[j].head_branch == branch || branch == '*')))
@@ -81,8 +90,6 @@ function fetchPages(numberOfEntries, drawer)
     }
 }
 
-let jobsReceived = 0;
-let jobs = [];
 function getJob(jobId, drawer)
 {
     let url = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs/' + jobId + '/jobs';

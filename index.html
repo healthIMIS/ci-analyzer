@@ -2,9 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>GitHub Actions Analyzer</title>
 </head>
 <body>
+<input type="text" id="targetrepo" name="targetrepo" value="hzi-braunschweig/SORMAS-Project" style="width: 30%"><br>
+
+<select name="branchselector" id="branchselector">
+    <option value="*">All</option>
+    <option value="development">development</option>
+</select>
 <button onclick="startAll()">Fetch Data</button>
 <br>
 <canvas id="myCanvas2" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
@@ -16,19 +22,21 @@
 <script src="dataFetcher.js"></script>
 <script src="Chart.js"></script>
 <script>
+    let ctx = document.getElementById('myCanvas2').getContext('2d');
+    let myChart = new Chart(ctx, {});
     function startAll()
     {
+        myChart.destroy();
         fetchData(drawResults);
     }
     function drawResults(timings)
     {
-        let ctx = document.getElementById('myCanvas2').getContext('2d');
         let labelsArr = [];
         for(let i = 0; i < timings.length; i++)
         {
             labelsArr.push(i*10);
         }
-        let myChart = new Chart(ctx, {
+        myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labelsArr,
