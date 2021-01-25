@@ -1,23 +1,40 @@
 // TODO: clean up this mess
-
+// Only change these const variables for configuration!
 const baseurl = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs?status=success';
-const total_amount = 380;
-const page_number = 4;
+const token = '57c1ed9995de7c04' + 'a63f2976a3caa68cfaff390c'; // GitHub access token
 const smoothness = 10; // higher = smoother
 
+let total_amount = 100;
 let jobsReceived = 0;
 let jobs = [];
 
 function fetchData(drawer)
 {
-    // TODO: total_amount and page_number should be auto-fetched
+        let url = baseurl + '&per_page=1'
 
-    let entries_left = total_amount;
+        const xmlhttp = new XMLHttpRequest()
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                const response = JSON.parse(this.responseText)
+                total_amount = response.total_count;
+                fetchPages(response.total_count, drawer);
+            } else if (this.readyState == 4) {
+                console.log("problem encountered - " + this.status)
+            }
+        }
+        xmlhttp.open('GET', url, true)
+        xmlhttp.setRequestHeader("Authorization", 'token ' + token);
+        xmlhttp.send()
+}
+
+function fetchPages(numberOfEntries, drawer)
+{
+
+    let entries_left = numberOfEntries;
     let per_page = 100;
-
+    const page_number = Math.ceil(numberOfEntries / per_page);
     let pages_received = 0;
 
-    let total_count = 1;
     let runs = [];
     let i = 0;
     while(i < page_number) {
@@ -28,28 +45,29 @@ function fetchData(drawer)
         let url = baseurl + '&per_page=' + per_page + '&page=' + i;
         i++;
         entries_left -= per_page;
+
         const xmlhttp = new XMLHttpRequest()
         xmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 const response = JSON.parse(this.responseText)
-                total_count = response.total_count;
-                runs.push.apply(runs, response.workflow_runs);
+                Array.prototype.push.apply(runs, response.workflow_runs);
                 pages_received += 1;
+
                 if(pages_received == page_number)
                 {
-                    console.log("received all runs.")
+                    console.log("received all " + numberOfEntries + " runs.")
                     let j;
-                    for(j = 0; j < (total_count-2); j++)
+                    for(j = 0; j < (numberOfEntries); j++)
                     {
                         getJob(runs[j].id, drawer)
                     }
                 }
             } else if (this.readyState == 4) {
-                console.log("problem encountered")
+                console.log("problem encountered - " + this.status)
             }
         }
         xmlhttp.open('GET', url, true)
-        xmlhttp.setRequestHeader("Authorization", 'token ' + '2cf59f03b94ca4cf9e0dd2ab89d06dfd38f428f6');
+        xmlhttp.setRequestHeader("Authorization", 'token ' + token);
         xmlhttp.send()
     }
 }
@@ -66,19 +84,19 @@ function getJob(jobId, drawer)
             const response = JSON.parse(this.responseText)
             jobsReceived ++;
             jobs.push.apply(jobs, response.jobs);
-
             if(jobsReceived >= total_amount)
             {
+                console.log("start evaluation");
                 jobs.sort(function(a,b) {if(Date.parse(a.started_at) < Date.parse(b.completed_at)) {return -1} else {return 1}} )
                 evaluateData(jobs, drawer)
             }
 
         } else if (this.readyState == 4) {
-            console.log("problem encountered")
+            console.log("problem encountered - " + this.status)
         }
     }
     xmlhttp.open('GET', url, true)
-    xmlhttp.setRequestHeader("Authorization", 'token ' + '2cf59f03b94ca4cf9e0dd2ab89d06dfd38f428f6');
+    xmlhttp.setRequestHeader("Authorization", 'token ' + token);
     xmlhttp.send()
 }
 
