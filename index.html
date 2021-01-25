@@ -6,11 +6,13 @@
 </head>
 <body>
 <input type="text" id="targetrepo" name="targetrepo" value="hzi-braunschweig/SORMAS-Project" style="width: 30%"><br>
-
 <select name="branchselector" id="branchselector">
     <option value="*">All</option>
     <option value="development">development</option>
-</select>
+</select><br>
+<p>Smoothness:</p>
+<input type="number" id="smoothnessSelector" name="smoothnessSelector" min="1" max="20" value="10">
+<br>
 <button onclick="startAll()">Fetch Data</button>
 <br>
 <canvas id="myCanvas2" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
@@ -81,7 +83,7 @@
                             return x + 'm'
                         },
                         title: function(tooltipItem, data){
-                            return 'Average runtime of 10 jobs'
+                            return 'Average runtime of n jobs (n=smoothness)'
                         }
                     }
                 }
