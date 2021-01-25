@@ -3,10 +3,9 @@
 const baseurl = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs?status=success';
 const token = '57c1ed9995de7c04' + 'a63f2976a3caa68cfaff390c'; // GitHub access token
 const smoothness = 10; // higher = smoother
+const branches = ["development", "*"]; // allowed head branches of jobs. use "*" to evaluate all jobs
 
-let total_amount = 100;
-let jobsReceived = 0;
-let jobs = [];
+let job_amount = 0;
 
 function fetchData(drawer)
 {
@@ -16,7 +15,6 @@ function fetchData(drawer)
         xmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 const response = JSON.parse(this.responseText)
-                total_amount = response.total_count;
                 fetchPages(response.total_count, drawer);
             } else if (this.readyState == 4) {
                 console.log("problem encountered - " + this.status)
@@ -59,7 +57,18 @@ function fetchPages(numberOfEntries, drawer)
                     let j;
                     for(j = 0; j < (numberOfEntries); j++)
                     {
-                        getJob(runs[j].id, drawer)
+                        if(branches.some(branch => (runs[j].head_branch == branch || branch == '*')))
+                        {
+                            job_amount = job_amount + 1;
+                        }
+                    }
+                    console.log("found " + job_amount + " jobs with corresponding head branch")
+                    for(j = 0; j < (numberOfEntries); j++)
+                    {
+                        if(branches.some(branch => (runs[j].head_branch == branch || branch == '*')))
+                        {
+                            getJob(runs[j].id, drawer)
+                        }
                     }
                 }
             } else if (this.readyState == 4) {
@@ -72,21 +81,21 @@ function fetchPages(numberOfEntries, drawer)
     }
 }
 
+let jobsReceived = 0;
+let jobs = [];
 function getJob(jobId, drawer)
 {
     let url = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/actions/runs/' + jobId + '/jobs';
     const xmlhttp = new XMLHttpRequest()
 
-
-
     xmlhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             const response = JSON.parse(this.responseText)
-            jobsReceived ++;
+            jobsReceived = jobsReceived + 1;
             jobs.push.apply(jobs, response.jobs);
-            if(jobsReceived >= total_amount)
+            if(jobsReceived >= job_amount)
             {
-                console.log("start evaluation");
+                console.log("start evaluation of " + jobsReceived + " jobs");
                 jobs.sort(function(a,b) {if(Date.parse(a.started_at) < Date.parse(b.completed_at)) {return -1} else {return 1}} )
                 evaluateData(jobs, drawer)
             }
