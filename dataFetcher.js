@@ -7,7 +7,23 @@ let branches = []; // allowed head branches of jobs. use "*" to evaluate all job
 
 let job_amount = 0;
 let jobsReceived = 0;
-let jobs = [];
+let datapoints = [];
+
+class Datapoint
+{
+    constructor(jobs)
+    {
+        // TODO: handle case where multiple jobs are passed
+        this.jobs = jobs;
+        const createdDate = Date.parse(jobs[0].started_at)
+        const doneDate = Date.parse(jobs[0].completed_at)
+        let diff = (doneDate - createdDate)
+        diff = diff / 1000
+        diff = diff / 60
+        this.timing = Math.floor(diff*100)/100;
+        this.date = Date.parse(jobs[0].started_at)
+    }
+}
 
 function fetchData(drawer)
 {
@@ -63,7 +79,7 @@ function fetchPages(numberOfEntries, drawer)
                     // reset counters
                     job_amount = 0;
                     jobsReceived = 0;
-                    jobs = [];
+                    datapoints = [];
                     pages_received = 0;
                     for(j = 0; j < (numberOfEntries); j++)
                     {
@@ -100,12 +116,14 @@ function getJob(jobId, drawer)
         if (this.readyState == 4 && this.status == 200) {
             const response = JSON.parse(this.responseText)
             jobsReceived = jobsReceived + 1;
-            jobs.push.apply(jobs, response.jobs);
+            datapoints.push(new Datapoint(response.jobs))
+
             if(jobsReceived >= job_amount)
             {
                 console.log("start evaluation of " + jobsReceived + " jobs");
-                jobs.sort(function(a,b) {if(Date.parse(a.started_at) < Date.parse(b.completed_at)) {return -1} else {return 1}} )
-                evaluateData(jobs, drawer)
+                datapoints.sort(function(a,b) {if((a.date) < (b.date)) {return -1} else {return 1}} )
+
+                evaluateData(datapoints, drawer)
             }
 
         } else if (this.readyState == 4) {
@@ -124,13 +142,8 @@ function evaluateData(runs, drawer)
     let i;
     for(i = 0; i < runs.length; i++)
     {
-        const createdDate = Date.parse(runs[i].started_at)
-        const doneDate = Date.parse(runs[i].completed_at)
-        let diff = (doneDate - createdDate)
-        diff = diff / 1000
-        diff = diff / 60
-        runtimes[i] = diff
-        totalruntime += diff
+        runtimes[i] = runs[i].timing;
+        totalruntime += runs[i].timing;
     }
     const avg = totalruntime / runs.length;
     console.log('avg: ' + avg)
