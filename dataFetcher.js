@@ -32,6 +32,8 @@ function fetchData(drawer)
         branches[0] = document.getElementById("branchselector").value;
         smoothness = document.getElementById("smoothnessSelector").value;
 
+        console.log("Starting fetch")
+
         const xmlhttp = new XMLHttpRequest()
         xmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -55,15 +57,10 @@ function fetchPages(numberOfEntries, drawer)
     let pages_received = 0;
 
     let runs = [];
-    let i = 0;
-    while(i < page_number) {
-        if(entries_left < per_page)
-        {
-            per_page = entries_left;
-        }
+    let i = 1;
+    while(i <= page_number) {
         let url = baseurl + '&per_page=' + per_page + '&page=' + i;
         i++;
-        entries_left -= per_page;
 
         const xmlhttp = new XMLHttpRequest()
         xmlhttp.onreadystatechange = function () {
@@ -125,7 +122,6 @@ function getJob(jobId, drawer)
 
                 evaluateData(datapoints, drawer)
             }
-
         } else if (this.readyState == 4) {
             console.log("problem encountered - " + this.status)
         }
@@ -161,7 +157,7 @@ function evaluateData(runs, drawer)
         total/=smoothness;
         smoothruntimes[i] = total;
     }
-    console.log('draw graph')
+    console.log('draw graph with ' + smoothruntimes.length + ' points')
     drawer(smoothruntimes)
     graph(smoothruntimes)
 }
