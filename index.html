@@ -13,10 +13,11 @@
 <p>Smoothness:</p>
 <input type="number" id="smoothnessSelector" name="smoothnessSelector" min="1" max="20" value="10">
 <br>
-<button onclick="startAll()">Fetch Data</button>
+<button onclick="startAll()" style="width: 150px">Fetch Data</button>
+<div style="width: 150px; height: 20px; background-color:lightgray; border: 1px solid black; border-radius: 3px;">
+    <span style="width: 0%; height: 100%; background-color: blue; display:block;" id="progressbarspan"></span>
+</div>
 <br>
-<canvas id="myCanvas2" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
-</canvas>
 <canvas id="myCanvas" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
 </canvas>
 </body>
@@ -24,7 +25,7 @@
 <script src="dataFetcher.js"></script>
 <script src="Chart.js"></script>
 <script>
-    let ctx = document.getElementById('myCanvas2').getContext('2d');
+    let ctx = document.getElementById('myCanvas').getContext('2d');
     let myChart = new Chart(ctx, {});
     function startAll()
     {

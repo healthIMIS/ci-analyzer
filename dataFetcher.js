@@ -115,6 +115,9 @@ function getJob(jobId, drawer)
             jobsReceived = jobsReceived + 1;
             datapoints.push(new Datapoint(response.jobs))
 
+            const progress = jobsReceived/job_amount*100;
+            document.getElementById("progressbarspan").style.width = (progress + "%");
+
             if(jobsReceived >= job_amount)
             {
                 console.log("start evaluation of " + jobsReceived + " jobs");
@@ -159,68 +162,4 @@ function evaluateData(runs, drawer)
     }
     console.log('draw graph with ' + smoothruntimes.length + ' points')
     drawer(smoothruntimes)
-    graph(smoothruntimes)
-}
-
-
-function graph(arr) {
-    const canvas = document.getElementById("myCanvas");
-    const cont = canvas.getContext("2d");
-    const width = 900;
-    const height = 450;
-    const Ymax = 30;
-    const xoffset = (1 / (arr.length - 1)) * width;
-    const yoffset = (height * (1/Ymax));
-
-    const numDataPoints = arr.length;
-
-    cont.strokeStyle = 'black'
-
-    // draw Rect
-    cont.clearRect(0, 0, width, height)
-    cont.strokeRect(0, 0, width, height)
-
-    // draw Bars
-    for (let i = 0; i < numDataPoints; i+=5) {
-        const x = i*xoffset;
-        const y = 5;
-        cont.beginPath();
-        cont.moveTo(x, height);
-        cont.lineTo(x, height - y);
-        cont.textAlign = 'center'
-        if(i!=0)cont.strokeText((i*smoothness).toString(), x, height-y);
-        cont.closePath();
-        cont.stroke();
-    }
-    for (let i = 0; i < Ymax; i+=5) {
-        const x = 0;
-        const y = i*yoffset;
-        cont.beginPath();
-        cont.moveTo(x, y);
-        cont.lineTo(x+5, y);
-        cont.textAlign = 'start'
-        if(i!=0)cont.strokeText((Ymax-i).toString() + 'm', x+5, y);
-        cont.closePath();
-        cont.stroke();
-    }
-
-    // Draw Graph
-    cont.beginPath();
-    cont.moveTo(0, height-(arr[0]*yoffset));
-    for (let i = 0; i < numDataPoints; i++) {
-
-        const x = i*xoffset;
-        const y = height - (arr[i]*yoffset);
-        cont.lineTo(x, y);
-    }
-    cont.closePath();
-    cont.stroke();
-
-    // draw Trend
-    cont.strokeStyle = 'green'
-    cont.beginPath();
-    cont.moveTo(0, height-(arr[0]*yoffset));
-    cont.lineTo((numDataPoints - 1)*xoffset, height - (arr[numDataPoints-1]*yoffset))
-    cont.closePath();
-    cont.stroke();
 }
