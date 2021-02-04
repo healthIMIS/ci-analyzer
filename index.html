@@ -27,8 +27,10 @@
 <script>
     let ctx = document.getElementById('myCanvas').getContext('2d');
     let myChart = new Chart(ctx, {});
+    let smoothnessvalue = 10;
     function startAll()
     {
+        smoothnessvalue = document.getElementById('smoothnessSelector').value;
         myChart.destroy();
         fetchData(drawResults);
     }
@@ -37,7 +39,7 @@
         let labelsArr = [];
         for(let i = 0; i < timings.length; i++)
         {
-            labelsArr.push(i*10);
+            labelsArr.push(i*smoothnessvalue);
         }
         myChart = new Chart(ctx, {
             type: 'line',
