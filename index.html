@@ -2,13 +2,95 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>GitHub Actions Analyzer</title>
 </head>
 <body>
-<button onclick="fetchData()">Fetch Data</button>
+<input type="text" id="targetrepo" name="targetrepo" value="hzi-braunschweig/SORMAS-Project" style="width: 30%"><br>
+<select name="branchselector" id="branchselector">
+    <option value="*">All</option>
+    <option value="development">development</option>
+</select><br>
+<p>Smoothness:</p>
+<input type="number" id="smoothnessSelector" name="smoothnessSelector" min="1" max="20" value="10">
+<br>
+<button onclick="startAll()" style="width: 150px">Fetch Data</button>
+<div style="width: 150px; height: 20px; background-color:lightgray; border: 1px solid black; border-radius: 3px;">
+    <span style="width: 0%; height: 100%; background-color: blue; display:block;" id="progressbarspan"></span>
+</div>
 <br>
 <canvas id="myCanvas" width="900" height="450" style="border: 1px solid #ddd;">Your browser does not support the HTML5 canvas tag
 </canvas>
 </body>
 </html>
 <script src="dataFetcher.js"></script>
+<script src="Chart.js"></script>
+<script>
+    let ctx = document.getElementById('myCanvas').getContext('2d');
+    let myChart = new Chart(ctx, {});
+    let smoothnessvalue = 10;
+    function startAll()
+    {
+        smoothnessvalue = document.getElementById('smoothnessSelector').value;
+        myChart.destroy();
+        fetchData(drawResults);
+    }
+    function drawResults(timings)
+    {
+        let labelsArr = [];
+        for(let i = 0; i < timings.length; i++)
+        {
+            labelsArr.push(i*smoothnessvalue);
+        }
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labelsArr,
+                datasets: [{
+                    label: 'Job duration',
+                    data: timings,
+                    fill: false,
+                    backgroundColor: 'black',
+                    borderColor: 'blue',
+                    tension: 0,
+                    radius: 2,
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value, index, values)
+                            {
+                                return value + 'm';
+                            }
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            maxTicksLimit: 10
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'GitHub SORMAS-Project CI Timings'
+                },
+                responsive: false,
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data)
+                        {
+                            let x = Math.floor(tooltipItem.value * 100)/100;
+                            return x + 'm'
+                        },
+                        title: function(tooltipItem, data){
+                            return 'Average runtime of n jobs (n=smoothness)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
