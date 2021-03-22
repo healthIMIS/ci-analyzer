@@ -4,6 +4,7 @@ let baseurl = 'https://api.github.com/repos/hzi-braunschweig/SORMAS-Project/acti
 const token = '57c1ed9995de7c04' + 'a63f2976a3caa68cfaff390c'; // GitHub access token
 let smoothness = 10; // higher = smoother
 let branches = []; // allowed head branches of jobs. use "*" to evaluate all jobs
+let workflows = []; // allowed workflows to analyze. use "*" to evaluate all workflows
 
 let job_amount = 0;
 let jobsReceived = 0;
@@ -30,6 +31,7 @@ function fetchData(drawer)
         let baseurl = 'https://api.github.com/repos/' + document.getElementById("targetrepo").value + '/actions/runs?status=success'
         let url = baseurl + '&per_page=1'
         branches[0] = document.getElementById("branchselector").value;
+        workflows[0] = document.getElementById("targetworkflow").value;
         smoothness = document.getElementById("smoothnessSelector").value;
 
         console.log("Starting fetch")
@@ -72,27 +74,25 @@ function fetchPages(numberOfEntries, drawer)
                 if(pages_received == page_number)
                 {
                     console.log("received all " + numberOfEntries + " runs.")
-                    let j;
                     // reset counters
                     job_amount = 0;
                     jobsReceived = 0;
                     datapoints = [];
                     pages_received = 0;
-                    for(j = 0; j < (numberOfEntries); j++)
-                    {
-                        if(branches.some(branch => (runs[j].head_branch == branch || branch == '*')))
+                    runs.forEach(run => {
+                        if(run.id == '426402439')
                         {
-                            job_amount = job_amount + 1;
+                            console.log(run)
                         }
-                    }
-                    console.log("found " + job_amount + " jobs with corresponding head branch")
-                    for(j = 0; j < (numberOfEntries); j++)
-                    {
-                        if(branches.some(branch => (runs[j].head_branch == branch || branch == '*')))
+                        if(branches.some(branch => (run.head_branch == branch || branch == '*')))
                         {
-                            getJob(runs[j].id, drawer)
+                            if(workflows.some(workflow => (run.name == workflow || workflow == '*'))) {
+                                getJob(run.id, drawer)
+                                job_amount = job_amount + 1;
+                            }
                         }
-                    }
+                    })
+                    console.log("found " + job_amount + " jobs with corresponding head branch and workflow")
                 }
             } else if (this.readyState == 4) {
                 console.log("problem encountered - " + this.status)
@@ -146,6 +146,7 @@ function evaluateData(runs, drawer)
     }
     const avg = totalruntime / runs.length;
     console.log('avg: ' + avg)
+    console.log('first: ' + runs[0].date)
 
     // average it over its runs
     let smoothruntimes = [];
